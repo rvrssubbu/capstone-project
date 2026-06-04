@@ -1,0 +1,27 @@
+openapi: 3.0.3
+info:
+  title: PayPilot Ledger API
+  version: v1
+paths:
+  /api/v1/ledger/entries:
+    get:
+      summary: Get paged ledger entries for merchant
+      parameters:
+        - name: merchantId
+          in: query
+          required: true
+          schema: { type: string }
+        - name: page
+          in: query
+          schema: { type: integer, default: 0 }
+        - name: size
+          in: query
+          schema: { type: integer, default: 20 }
+      responses:
+        "200":
+          description: Paged ledger entries
+    post:
+      summary: Append ledger entry
+      responses:
+        "201":
+          description: Ledger entry appended

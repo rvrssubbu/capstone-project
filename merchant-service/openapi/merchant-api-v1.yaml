@@ -1,0 +1,38 @@
+openapi: 3.0.3
+info:
+  title: PayPilot Merchant API
+  version: v1
+paths:
+  /api/v1/merchants:
+    get:
+      summary: List merchants
+      responses:
+        "200":
+          description: Merchants returned
+    post:
+      summary: Create merchant
+      responses:
+        "201":
+          description: Merchant created
+  /api/v1/merchants/{merchantId}:
+    get:
+      summary: Get merchant
+      parameters:
+        - name: merchantId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Merchant found
+  /api/v1/merchants/{merchantId}/kyc:
+    put:
+      summary: Update KYC status
+      parameters:
+        - name: merchantId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: KYC updated

@@ -1,0 +1,116 @@
+services:
+  merchant-db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: merchant_db
+      POSTGRES_USER: paypilot
+      POSTGRES_PASSWORD: paypilot
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U paypilot -d merchant_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  payment-db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: payment_db
+      POSTGRES_USER: paypilot
+      POSTGRES_PASSWORD: paypilot
+    ports:
+      - "5434:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U paypilot -d payment_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  ledger-db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: ledger_db
+      POSTGRES_USER: paypilot
+      POSTGRES_PASSWORD: paypilot
+    ports:
+      - "5435:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U paypilot -d ledger_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+  merchant-service:
+    build:
+      context: .
+      dockerfile: merchant-service/Dockerfile
+    depends_on:
+      merchant-db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://merchant-db:5432/merchant_db
+      SPRING_DATASOURCE_USERNAME: paypilot
+      SPRING_DATASOURCE_PASSWORD: paypilot
+    ports:
+      - "8081:8081"
+  payment-service:
+    build:
+      context: .
+      dockerfile: payment-service/Dockerfile
+    depends_on:
+      payment-db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://payment-db:5432/payment_db
+      SPRING_DATASOURCE_USERNAME: paypilot
+      SPRING_DATASOURCE_PASSWORD: paypilot
+    ports:
+      - "8082:8082"
+  ledger-service:
+    build:
+      context: .
+      dockerfile: ledger-service/Dockerfile
+    depends_on:
+      ledger-db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://ledger-db:5432/ledger_db
+      SPRING_DATASOURCE_USERNAME: paypilot
+      SPRING_DATASOURCE_PASSWORD: paypilot
+    ports:
+      - "8083:8083"
+  api-gateway:
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+    depends_on:
+      - merchant-service
+      - payment-service
+      - ledger-service
+    environment:
+      MERCHANT_SERVICE_URL: http://merchant-service:8081
+      PAYMENT_SERVICE_URL: http://payment-service:8082
+      LEDGER_SERVICE_URL: http://ledger-service:8083
+    ports:
+      - "8085:8085"
+  paypilot-ui:
+    build:
+      context: .
+      dockerfile: paypilot-ui/Dockerfile
+    depends_on:
+      - api-gateway
+    ports:
+      - "80:80"

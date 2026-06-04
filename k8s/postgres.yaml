@@ -1,0 +1,149 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: merchant-db
+  namespace: paypilot
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: merchant-db }
+  template:
+    metadata:
+      labels: { app: merchant-db }
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:15
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              value: merchant_db
+            - name: POSTGRES_USER
+              valueFrom: { secretKeyRef: { name: paypilot-db-secret, key: username } }
+            - name: POSTGRES_PASSWORD
+              valueFrom: { secretKeyRef: { name: paypilot-db-secret, key: password } }
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "paypilot", "-d", "merchant_db"]
+            initialDelaySeconds: 10
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: merchant-db
+  namespace: paypilot
+spec:
+  type: ClusterIP
+  selector: { app: merchant-db }
+  ports:
+    - port: 5432
+      targetPort: 5432
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payment-db
+  namespace: paypilot
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: payment-db }
+  template:
+    metadata:
+      labels: { app: payment-db }
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:15
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              value: payment_db
+            - name: POSTGRES_USER
+              valueFrom: { secretKeyRef: { name: paypilot-db-secret, key: username } }
+            - name: POSTGRES_PASSWORD
+              valueFrom: { secretKeyRef: { name: paypilot-db-secret, key: password } }
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "paypilot", "-d", "payment_db"]
+            initialDelaySeconds: 10
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: payment-db
+  namespace: paypilot
+spec:
+  type: ClusterIP
+  selector: { app: payment-db }
+  ports:
+    - port: 5432
+      targetPort: 5432
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ledger-db
+  namespace: paypilot
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: ledger-db }
+  template:
+    metadata:
+      labels: { app: ledger-db }
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:15
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              value: ledger_db
+            - name: POSTGRES_USER
+              valueFrom: { secretKeyRef: { name: paypilot-db-secret, key: username } }
+            - name: POSTGRES_PASSWORD
+              valueFrom: { secretKeyRef: { name: paypilot-db-secret, key: password } }
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "paypilot", "-d", "ledger_db"]
+            initialDelaySeconds: 10
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ledger-db
+  namespace: paypilot
+spec:
+  type: ClusterIP
+  selector: { app: ledger-db }
+  ports:
+    - port: 5432
+      targetPort: 5432

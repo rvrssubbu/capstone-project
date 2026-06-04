@@ -1,0 +1,81 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-initdb
+  namespace: {{ include "paypilot.namespace" . }}
+  labels:
+{{ include "paypilot.labels" . | nindent 4 }}
+data:
+  01-create-service-databases.sql: |
+    CREATE DATABASE "{{ .Values.database.serviceDatabases.merchant }}";
+    CREATE DATABASE "{{ .Values.database.serviceDatabases.payment }}";
+    CREATE DATABASE "{{ .Values.database.serviceDatabases.ledger }}";
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+  namespace: {{ include "paypilot.namespace" . }}
+  labels:
+    app: postgres
+{{ include "paypilot.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: {{ .Values.database.image }}
+          ports:
+            - containerPort: {{ .Values.database.port }}
+          env:
+            - name: POSTGRES_DB
+              value: {{ .Values.database.defaultName | quote }}
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: paypilot-db-secret
+                  key: username
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: paypilot-db-secret
+                  key: password
+          readinessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - {{ .Values.database.username | quote }}
+                - -d
+                - {{ .Values.database.defaultName | quote }}
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          volumeMounts:
+            - name: postgres-initdb
+              mountPath: /docker-entrypoint-initdb.d
+      volumes:
+        - name: postgres-initdb
+          configMap:
+            name: postgres-initdb
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: {{ include "paypilot.namespace" . }}
+  labels:
+    app: postgres
+{{ include "paypilot.labels" . | nindent 4 }}
+spec:
+  selector:
+    app: postgres
+  ports:
+    - port: {{ .Values.database.port }}
+      targetPort: {{ .Values.database.port }}

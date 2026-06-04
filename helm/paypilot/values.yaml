@@ -1,0 +1,50 @@
+namespace:
+  create: true
+  name: paypilot
+
+image:
+  pullPolicy: IfNotPresent
+
+config:
+  featureSettlementExport: "true"
+
+database:
+  host: postgres
+  port: 5432
+  defaultName: paypilot
+  username: paypilot
+  password: paypilot
+  image: postgres:15
+  serviceDatabases:
+    merchant: merchant_db
+    payment: payment_db
+    ledger: ledger_db
+
+apiGateway:
+  image: paypilot/api-gateway:latest
+  port: 8080
+  nodePort: 30080
+  replicas: 1
+
+ui:
+  image: paypilot/paypilot-ui:latest
+  port: 80
+  nodePort: 30000
+  replicas: 1
+
+services:
+  merchant:
+    name: merchant-service
+    image: paypilot/merchant-service:latest
+    port: 8081
+    replicas: 1
+  payment:
+    name: payment-service
+    image: paypilot/payment-service:latest
+    port: 8082
+    replicas: 1
+  ledger:
+    name: ledger-service
+    image: paypilot/ledger-service:latest
+    port: 8083
+    replicas: 1

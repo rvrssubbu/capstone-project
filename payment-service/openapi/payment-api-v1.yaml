@@ -1,0 +1,51 @@
+openapi: 3.0.3
+info:
+  title: PayPilot Payment API
+  version: v1
+paths:
+  /api/v1/payments/intents:
+    get:
+      summary: Search payment intents
+      parameters:
+        - name: merchantId
+          in: query
+          schema: { type: string }
+        - name: status
+          in: query
+          schema: { type: string, enum: [CREATED, AUTHORIZED, FAILED] }
+        - name: page
+          in: query
+          schema: { type: integer, default: 0 }
+        - name: size
+          in: query
+          schema: { type: integer, default: 20 }
+      responses:
+        "200":
+          description: Payment intents returned
+    post:
+      summary: Create payment intent
+      responses:
+        "201":
+          description: Payment intent created
+  /api/v1/payments/intents/{intentId}:
+    get:
+      summary: Get payment intent
+      parameters:
+        - name: intentId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Payment intent found
+  /api/v1/payments/intents/{intentId}/authorize:
+    post:
+      summary: Simulate provider authorization
+      parameters:
+        - name: intentId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Authorization result

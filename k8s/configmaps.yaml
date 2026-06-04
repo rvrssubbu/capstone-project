@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: paypilot-config
+  namespace: paypilot
+data:
+  MERCHANT_SERVICE_URL: http://merchant-service:8081
+  PAYMENT_SERVICE_URL: http://payment-service:8082
+  LEDGER_SERVICE_URL: http://ledger-service:8083
+  MERCHANT_DATASOURCE_URL: jdbc:postgresql://merchant-db:5432/merchant_db
+  PAYMENT_DATASOURCE_URL: jdbc:postgresql://payment-db:5432/payment_db
+  LEDGER_DATASOURCE_URL: jdbc:postgresql://ledger-db:5432/ledger_db
+  FEATURE_SETTLEMENT_EXPORT: "true"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: paypilot-db-secret
+  namespace: paypilot
+type: Opaque
+stringData:
+  username: paypilot
+  password: paypilot

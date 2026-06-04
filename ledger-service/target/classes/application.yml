@@ -1,0 +1,26 @@
+server:
+  port: 8083
+  shutdown: graceful
+spring:
+  application:
+    name: ledger-service
+  datasource:
+    url: jdbc:h2:mem:ledger_db;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
+paypilot:
+  storage:
+    local-dir: ${PAYPILOT_STORAGE_LOCAL_DIR:build/paypilot-storage}
+  features:
+    settlement-export: ${FEATURE_SETTLEMENT_EXPORT:true}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
