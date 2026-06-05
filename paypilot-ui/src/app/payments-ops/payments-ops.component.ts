@@ -13,7 +13,7 @@ import { LedgerEntry, PaymentIntent } from '../shared/models';
       <div class="toolbar">
         <div>
           <h1>Payments Ops</h1>
-          <p>Search, inspect timeline, and retry authorization</p>
+          <p>Search, inspect timeline</p>
         </div>
 
       </div>
@@ -48,7 +48,6 @@ import { LedgerEntry, PaymentIntent } from '../shared/models';
               <th>Merchant</th>
               <th>Amount</th>
               <th>Status</th>
-              <th>Action</th>
             </tr>
           </thead>
           <tbody>

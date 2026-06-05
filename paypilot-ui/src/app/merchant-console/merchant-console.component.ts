@@ -12,8 +12,8 @@ import { Merchant } from '../shared/models';
     <main class="page">
       <div class="toolbar">
         <div>
-          <h1>Merchant Console</h1>
-          <p>Onboarding and KYC operations</p>
+
+          <h1>Merchant Onboarding and KYC operations</h1>
         </div>
 
       </div>
@@ -40,21 +40,12 @@ import { Merchant } from '../shared/models';
           </div>
           <div class="field">
             <label>Phone</label>
-            <input
-                type="text"
-                name="phone"
-                placeholder="+91 0000000000"
-                required
-                pattern="^\+91\d{10}$"
-                title="Phone number must start with +91 followed by 10 digits">
-            <div style="color:red" *ngIf="merchantForm.get('phone')?.touched && merchantForm.get('phone')?.errors?.['required']">
-                Phone number is required
-              </div>
+            <input formControlName="phone" placeholder="+91 9876543210">
 
-              <!-- Pattern error -->
-              <div style="color:red" *ngIf="merchantForm.get('phone')?.touched && merchantForm.get('phone')?.errors?.['pattern']">
-                Phone number must start with +91 and contain exactly 10 digits
-              </div>
+            <!-- Validation error message -->
+            <div style="color:red" *ngIf="merchantForm.get('phone')?.touched && merchantForm.get('phone')?.invalid">
+              Phone number is required and must start with +91 followed by 10 digits
+            </div>
           </div>
           <div class="actions">
             <button class="primary" type="submit" [disabled]="merchantForm.invalid || loading">Create</button>
@@ -109,10 +100,13 @@ export class MerchantConsoleComponent implements OnInit {
    name: ['', Validators.required],
    category: ['RETAIL', Validators.required],
    email: ['', [Validators.required, Validators.email]],
-   phone: ['', [
-     Validators.required,                     // required
-     Validators.pattern(/^\+91[0-9]{10}$/)   // must start with +91 and 10 digits
-   ]],
+   phone: [
+     '',
+     [
+       Validators.required,
+       Validators.pattern(/^\+91\d{10}$/)
+     ]
+   ],
  });
 
   constructor(private readonly fb: FormBuilder, private readonly api: ApiService) {}
